@@ -1,0 +1,3 @@
+APP_NAME = "RavenLib Sync"
+APP_VERSION = "1.6.2"
+WEB_CLIENT_SERVER_VERSION = f"RavenLibWebClient/{APP_VERSION}"

@@ -1,0 +1,13 @@
+[Unit]
+Description=RavenLib Sync Demo Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/RavenLib/Server
+ExecStart=%h/RavenLib/Server/.venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RavenLib Sync Demo</title>
+    <meta id="themeColorMeta" name="theme-color" content="#15191f">
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem("ravenlib-theme");
+            document.documentElement.dataset.theme = savedTheme === "light" ? "light" : "dark";
+        })();
+    </script>
+    <link rel="stylesheet" href="/styles.css?v=__ASSET_TOKEN__">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">RavenLib Client</p>
+                <h1>Web Sync Console</h1>
+                <p class="hero-copy">Minimal project synchronization demo. Enter the project details manually, scan the folder, and sync it with the RavenLib server.</p>
+            </div>
+            <div class="hero-actions">
+                <div class="connection-card">
+                    <span class="connection-label">Server</span>
+                    <strong id="connectionState" class="status-badge status-idle">Checking...</strong>
+                    <button id="checkConnectionButton" class="ghost-button" type="button">Refresh status</button>
+                </div>
+                <button id="themeToggleButton" class="theme-button" type="button" aria-label="Toggle theme">
+                    <span id="themeToggleLabel">Light theme</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="layout">
+            <section class="panel config-panel">
+                <div class="panel-heading">
+                    <h2>Project Setup</h2>
+                    <button id="saveConfigButton" class="ghost-button" type="button">Save config</button>
+                </div>
+                <form id="configForm" class="config-grid">
+                    <label>
+                        <span>Server URL</span>
+                        <input id="serverUrl" name="server_url" type="url" placeholder="http://127.0.0.1:8000">
+                    </label>
+                    <label>
+                        <span>Project Name</span>
+                        <input id="projectName" name="project_name" type="text" placeholder="DemoProject" autocomplete="off">
+                    </label>
+                    <label class="full-width">
+                        <span>Project Folder</span>
+                        <input id="projectDir" name="project_dir" type="text" placeholder="D:\\Projects\\MyProject" autocomplete="off">
+                    </label>
+                    <label class="full-width">
+                        <span>Commit Description</span>
+                        <textarea id="commitMessage" name="commit_message" rows="3" placeholder="Optional description"></textarea>
+                    </label>
+                </form>
+                <div class="action-row">
+                    <button id="syncButton" class="primary-button" type="button">Scan and Sync</button>
+                    <button id="pullButton" class="secondary-button" type="button">Pull Latest</button>
+                    <button id="endSessionButton" class="danger-button" type="button">End Session</button>
+                </div>
+                <div class="action-options">
+                    <label class="toggle-option" for="autoRestartCheckbox">
+                        <input id="autoRestartCheckbox" type="checkbox">
+                        <span>Auto restart</span>
+                    </label>
+                    <span id="autoRestartHint" class="action-hint">Enable automatic retry after a sync or pull error.</span>
+                </div>
+            </section>
+
+            <section class="panel progress-panel">
+                <div class="panel-heading">
+                    <h2>Current Operation</h2>
+                    <span id="operationType" class="operation-tag">Idle</span>
+                </div>
+                <div class="status-strip">
+                    <strong id="operationStatus">Waiting for action.</strong>
+                    <span id="operationMeta">No active task</span>
+                </div>
+                <div class="progress-track" aria-hidden="true">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                <div id="resultCard" class="result-card result-empty">
+                    <h3>Summary</h3>
+                    <div id="resultContent">Result details will appear here.</div>
+                </div>
+                <div class="log-panel">
+                    <div class="panel-heading">
+                        <h3>Activity Log</h3>
+                        <button id="clearLogButton" class="ghost-button" type="button">Clear view</button>
+                    </div>
+                    <pre id="activityLog" class="log-output">Operation logs will appear here.</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="/app.js?v=__ASSET_TOKEN__"></script>
+</body>
+</html>

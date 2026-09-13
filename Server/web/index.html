@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RavenLib Server Dashboard</title>
+    <script>
+        (function () {
+            const sessionKey = "ravenlib-dashboard-session";
+            if (location.pathname === "/auth" || location.pathname === "/login") {
+                return;
+            }
+            if (!localStorage.getItem(sessionKey)) {
+                const next = encodeURIComponent(`${location.pathname}${location.search}${location.hash}` || "/");
+                location.replace(`/auth?next=${next}`);
+            }
+        })();
+    </script>
+    <link rel="apple-touch-icon" href="/ravenfall_code.png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div id="authOverlay" class="auth-overlay hidden">
+        <div class="auth-card">
+            <p class="eyebrow">RavenLib Security</p>
+            <h2 id="authTitle">Server Login</h2>
+            <p id="authSubtitle" class="auth-copy">
+                Enter the shared server password to unlock the dashboard and protected sync API.
+            </p>
+            <form id="authForm" class="auth-form">
+                <label>
+                    <span>Password</span>
+                    <input id="authPassword" type="password" autocomplete="current-password" required>
+                </label>
+                <label id="authConfirmRow" class="hidden">
+                    <span>Confirm Password</span>
+                    <input id="authConfirmPassword" type="password" autocomplete="new-password">
+                </label>
+                <div id="authMessage" class="auth-message" aria-live="polite"></div>
+                <button id="authSubmitButton" class="primary-button" type="submit">Unlock Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="page-shell">
+        <header class="hero">
+            <div>
+                <p class="eyebrow">RavenLib Server</p>
+                <h1>Sync Status Dashboard</h1>
+                <p class="hero-copy">
+                    Live server status, recent commit activity, and the latest log tail are all visible on the
+                    root page with the same visual language as the desktop-style web client.
+                </p>
+            </div>
+            <div class="hero-actions">
+                <div class="connection-card">
+                    <span class="connection-label">Server Health</span>
+                    <strong id="serverHealth" class="status-badge status-idle">Loading...</strong>
+                    <button id="refreshButton" class="ghost-button" type="button">Refresh now</button>
+                </div>
+                <div class="connection-card">
+                    <span class="connection-label">Access</span>
+                    <strong id="sessionState" class="status-badge status-idle">Locked</strong>
+                    <button id="logoutButton" class="ghost-button" type="button">Lock dashboard</button>
+                </div>
+                <button id="themeToggleButton" class="theme-button" type="button" aria-label="Toggle theme">
+                    <span id="themeToggleLabel">Dark theme</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="layout layout-server">
+            <section class="panel metrics-panel">
+                <div class="panel-heading">
+                    <h2>Server Status</h2>
+                    <span id="statusTimestamp">Waiting for first update</span>
+                </div>
+                <div id="statusCards" class="metrics-grid">
+                    <article class="metric-card">
+                        <span class="metric-label">Status</span>
+                        <strong class="metric-value">Loading...</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-heading">
+                    <h2>Access Control</h2>
+                    <span id="passwordUpdatedMeta">Protected by shared server password</span>
+                </div>
+                <form id="changePasswordForm" class="security-form">
+                    <label>
+                        <span>Current Password</span>
+                        <input id="currentPassword" type="password" autocomplete="current-password" required>
+                    </label>
+                    <label>
+                        <span>New Password</span>
+                        <input id="newPassword" type="password" autocomplete="new-password" required>
+                    </label>
+                    <label>
+                        <span>Confirm New Password</span>
+                        <input id="confirmNewPassword" type="password" autocomplete="new-password" required>
+                    </label>
+                    <div class="security-actions">
+                        <button id="changePasswordButton" class="primary-button" type="submit">
+                            Change server password
+                        </button>
+                        <div id="changePasswordResult" class="danger-result" aria-live="polite"></div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="workspace-grid">
+                <aside class="panel projects-panel">
+                    <div class="panel-heading">
+                        <h2>Projects On Server</h2>
+                        <span id="projectsMeta">Loading...</span>
+                    </div>
+                    <div id="projectsList" class="project-list">
+                        <div class="empty-state">Project list is loading.</div>
+                    </div>
+                </aside>
+
+                <section class="panel project-detail-panel">
+                    <div class="panel-heading detail-heading">
+                        <div>
+                            <h2 id="projectTitle">Select a project</h2>
+                            <p id="projectSubtitle" class="panel-subtitle">
+                                Choose a project from the server list to inspect its manifest, folders, files,
+                                commit history, and deletion controls.
+                            </p>
+                        </div>
+                        <div class="detail-actions">
+                            <strong id="projectStatusBadge" class="status-badge status-idle">Waiting</strong>
+                            <button id="refreshProjectButton" class="ghost-button" type="button" disabled>
+                                Refresh preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="projectPreviewEmpty" class="empty-state detail-empty">
+                        No project selected yet.
+                    </div>
+
+                    <div id="projectPreview" class="detail-stack hidden">
+                        <section class="detail-section">
+                            <div class="panel-heading compact-heading">
+                                <h3>Project Summary</h3>
+                                <span id="projectCheckedAt">Waiting for integrity check</span>
+                            </div>
+                            <div id="projectSummaryCards" class="metrics-grid"></div>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="panel-heading compact-heading">
+                                <h3>Manifest Explorer</h3>
+                                <span id="manifestMeta">0 item(s)</span>
+                            </div>
+                            <div id="manifestTree" class="manifest-tree">
+                                <div class="empty-state">Manifest tree will appear here.</div>
+                            </div>
+                        </section>
+
+                        <section class="detail-section">
+                            <div class="panel-heading compact-heading">
+                                <h3>Project Commit History</h3>
+                                <span id="projectHistoryMeta">0 item(s)</span>
+                            </div>
+                            <div class="history-table-wrap">
+                                <table class="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Commit</th>
+                                            <th>Sender</th>
+                                            <th>Files</th>
+                                            <th>Type</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectHistoryBody">
+                                        <tr>
+                                            <td colspan="6" class="history-placeholder">
+                                                Select a project to inspect its commit history.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <section class="detail-section danger-zone">
+                            <div class="panel-heading compact-heading">
+                                <h3>Delete Project</h3>
+                                <span>Permanent server action</span>
+                            </div>
+                            <p class="danger-copy">
+                                This removes the latest manifest, commit history, pending sync entries, and any
+                                orphaned objects that are no longer referenced on the server.
+                            </p>
+                            <div id="deleteResult" class="danger-result" aria-live="polite"></div>
+                            <button id="deleteProjectButton" class="danger-button" type="button">
+                                Delete project from server
+                            </button>
+                        </section>
+                    </div>
+                </section>
+            </section>
+
+            <section class="panel history-panel">
+                <div class="panel-heading">
+                    <h2>Recent Commits</h2>
+                    <span id="historyMeta">Loading...</span>
+                </div>
+
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Sender</th>
+                                <th>Files</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr>
+                                <td colspan="6" class="history-placeholder">Commit history is loading.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel log-panel">
+                <div class="panel-heading">
+                    <h2>Server Logs</h2>
+                    <span id="logMeta">Loading...</span>
+                </div>
+                <pre id="logOutput" class="log-output">Log tail is loading.</pre>
+            </section>
+        </main>
+    </div>
+
+    <template id="historyRowTemplate">
+        <tr>
+            <td data-field="received_at"></td>
+            <td data-field="project"></td>
+            <td data-field="sender"></td>
+            <td data-field="files"></td>
+            <td data-field="type"></td>
+            <td data-field="commit_message"></td>
+        </tr>
+    </template>
+
+    <template id="projectCardTemplate">
+        <button class="project-card" type="button">
+            <span class="project-card-top">
+                <strong data-field="project"></strong>
+                <span data-field="status" class="mini-badge"></span>
+            </span>
+            <span data-field="updated_at" class="project-card-meta"></span>
+            <span data-field="commit_message" class="project-card-message"></span>
+            <span data-field="stats" class="project-card-meta"></span>
+        </button>
+    </template>
+
+    <template id="projectCommitRowTemplate">
+        <tr>
+            <td data-field="received_at"></td>
+            <td data-field="commit_id"></td>
+            <td data-field="sender"></td>
+            <td data-field="files"></td>
+            <td data-field="type"></td>
+            <td data-field="commit_message"></td>
+        </tr>
+    </template>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,38 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RavenLib Server Access</title>
+    <script>
+        document.documentElement.dataset.theme = localStorage.getItem("ravenlib-server-theme") || "light";
+    </script>
+    <link rel="apple-touch-icon" href="/ravenfall_code.png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="auth-overlay">
+        <div class="auth-card">
+            <p class="eyebrow">RavenLib Security</p>
+            <h2 id="authTitle">Server Login</h2>
+            <p id="authSubtitle" class="auth-copy">
+                Enter the shared server password to unlock the dashboard and protected sync API.
+            </p>
+            <form id="authForm" class="auth-form">
+                <label>
+                    <span>Password</span>
+                    <input id="authPassword" type="password" autocomplete="current-password" required>
+                </label>
+                <label id="authConfirmRow" class="hidden">
+                    <span>Confirm Password</span>
+                    <input id="authConfirmPassword" type="password" autocomplete="new-password">
+                </label>
+                <div id="authMessage" class="auth-message" aria-live="polite"></div>
+                <button id="authSubmitButton" class="primary-button" type="submit">Unlock Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/auth.js"></script>
+</body>
+</html>
+
